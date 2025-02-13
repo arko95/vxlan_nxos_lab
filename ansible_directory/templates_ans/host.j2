@@ -1,0 +1,41 @@
+hostname: {{ device }}
+
+layer2:
+{% for intf in interfaces %}
+  {% if intf.name == device %}
+    {% for iface in intf.interface %}
+  - interface: {{ iface.ifn }}
+    mtu: 9216
+    vlan_id: {{ iface.vlan_id }}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+vrfs_services:
+{% for dev in vrfs_services %}
+  - vrf_name: &{{ dev.var_ref }} {{ dev.vrf }}
+    vlan_name: *{{ dev.var_ref }}
+    vlan_id: {{ dev.vlan_id }}
+    vni_id: {{ dev.vni_id }}
+{% endfor %}
+
+networks_services:
+{% for l2ser in networks_services %}
+  - vrf_name: *{{ l2ser.var_ref }}
+    vlan_name: {{ l2ser.vrf }}
+    vlan_id: {{ l2ser.vlan_id }}
+    vni_id: {{ l2ser.vni_id }}
+    addr: {{ l2ser.ip_network }}
+    mask: {{ l2ser.ip_mask }}
+    mcast_grp: {{ l2ser.nve_mgroup }}
+{% endfor %}
+
+{% if bgp.spines.devices.device | selectattr('name', 'equalto', device) | list %}
+bgp_rid:
+  asn: {{ bgp.spines.asn }}
+  router_id: {{ (bgp.spines.devices.device | selectattr('name', 'equalto', device) | list)[0].id }}
+{% elif bgp.leafs.devices.device | selectattr('name', 'equalto', device) | list %}
+bgp_rid:
+  asn: {{ bgp.leafs.asn }}
+  router_id: {{ (bgp.leafs.devices.device | selectattr('name', 'equalto', device) | list)[0].id }}
+{% endif %}

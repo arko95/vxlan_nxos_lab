@@ -1,0 +1,36 @@
+# leafs.j2
+
+features:
+  - ospf
+  - pim
+  - bgp
+  - nv overlay
+  - vn-segment-vlan-based
+  - interface-vlan
+  - netconf
+  - restconf
+
+bgp:
+  asn: {{ asn }}
+  neighbors:
+    {% for neighbor in neighbors %}
+    - neighbor: {{ neighbor }}
+      remote_as: {{ asn }}
+      update_source: loopback0
+    {% endfor %}
+
+vrfs:
+  {% for vrf in vrfs %}
+  - vrf_name: &{{ vrf.var_ref }} {{ vrf.vrf }}
+    vlan_name: *{{ vrf.var_ref }}
+    vlan_id: {{ vrf.vlan_id }}
+    vni_id: {{ vrf.vni_id }}
+  {% endfor %}
+
+networks:
+  {% for net in networks %}
+  - vrf_name: *{{ net.var_ref }}
+    vlan_name: {{ net.vrf }}
+    vlan_id: {{ net.vlan_id }}
+    vni_id: {{ net.vni_id }}
+  {% endfor %}

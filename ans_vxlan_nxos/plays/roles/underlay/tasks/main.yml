@@ -1,0 +1,47 @@
+---
+
+- name: Configure BGP Process and Neighbors
+  cisco.nxos.nxos_bgp_global:
+    config:
+      as_number: "{{ bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.neighbor }}"
+          remote_as: "{{ item.remote_as }}"
+          update_source: "{{ item.update_source }}"
+    state: merged
+  loop: "{{ bgp.neighbors }}"
+
+- name: Override all BGP AF configuration with provided configuration
+  cisco.nxos.nxos_bgp_address_family:
+    config:
+      as_number: "{{ bgp_rid.asn }}"
+      address_family:
+        - afi: l2vpn
+          safi: evpn
+    state: merged
+
+
+- name: Configure BGP Neighbor Address-Families
+  cisco.nxos.nxos_bgp_neighbor_address_family:
+    config:
+      as_number: "{{ bgp.asn }}"
+      neighbors:
+        - neighbor_address: "{{ item.neighbor }}"
+          address_family:
+            - afi: l2vpn
+              safi: evpn
+              route_reflector_client: "{{ 'yes' if inventory_hostname in groups['spines'] else omit }}"
+              send_community:
+                both: yes
+    state: merged
+  loop: "{{ bgp.neighbors }}"
+
+- name: Configure BGP Process and Neighbors
+  cisco.nxos.nxos_bgp_global:
+    config:
+      as_number: "{{ bgp_rid.asn }}"
+      router_id: "{{ bgp_rid.router_id }}"
+    state: merged
+
+
+  

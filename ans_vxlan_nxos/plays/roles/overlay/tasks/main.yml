@@ -1,0 +1,167 @@
+---
+- name: Configure VLAN-to-VNI Mappings
+  cisco.nxos.nxos_vlans:
+    config:
+      - name: "{{ item.vlan_name }}"
+        vlan_id: "{{ item.vlan_id }}"
+        mapped_vni: "{{ item.vni_id }}"
+    state: merged
+  loop: "{{ vrfs + networks }}"
+
+- name: Configure L3VNI VRF(s)
+  cisco.nxos.nxos_vrf:
+    vrf: "{{ item.vrf_name }}"
+    vni: "{{ item.vni_id }}"
+    rd: auto
+    state: present
+  loop: "{{ vrfs }}"
+
+- name: Configure BGP L3VNI VRFs
+  cisco.nxos.nxos_bgp_address_family:
+    config:
+      as_number: "{{ bgp.asn }}"
+      address_family:
+        - vrf: "{{ item.vrf_name }}"
+          afi: ipv4
+          safi: unicast
+          advertise_l2vpn_evpn: true
+    state: merged
+  loop: "{{ vrfs }}"
+
+- cisco.nxos.nxos_overlay_global:
+    anycast_gateway_mac: aaaa.aaaa.aaaa
+
+
+- name: Configure VXLAN VTEP NVE Interface
+  cisco.nxos.nxos_vxlan_vtep:
+    interface: nve1
+    host_reachability: true
+    source_interface: Loopback0
+    shutdown: false
+    state: present
+
+
+- name: Configure VLAN-to-VNI Mappings
+  cisco.nxos.nxos_vlans:
+    config:
+      - name: "{{ item.vlan_name }}"
+        vlan_id: "{{ item.vlan_id }}"
+        mapped_vni: "{{ item.vni_id }}"
+    state: merged
+  loop: "{{ vrfs_services + networks_services }}"
+
+
+- name: Configure L3VNI VRF(s) Address-Family
+  cisco.nxos.nxos_vrf_af:
+    vrf: "{{ item.vrf_name }}"
+    afi: ipv4
+    route_targets:
+      - rt: auto
+        direction: both
+        state: present
+    route_target_both_auto_evpn: true
+    state: present
+  loop: "{{ vrfs_services }}" 
+
+- name: Configure PIM Anycast RP
+  cisco.nxos.nxos_config:
+    lines:
+      - "inter nve 1"
+      - "member vni {{ item.vni_id }}"
+      - "mcast-group {{ item.mcast_grp }}"
+  loop: "{{ networks_services }}"
+
+
+
+- name: Configure L2VNI Under EVPN
+  cisco.nxos.nxos_evpn_vni:
+    vni: "{{ item.vni_id }}"
+    route_distinguisher: auto
+    route_target_both: auto
+    state: present
+  loop: "{{ networks_services }}"
+
+
+
+- name: Configure just vlan
+  cisco.nxos.nxos_vlans:
+    config:
+      - name: "{{ item.vlan_name }}"
+        vlan_id: "{{ item.vlan_id }}"
+    state: merged
+  loop: "{{ networks_services }}"
+
+- name: Configure SVI
+  cisco.nxos.nxos_config:
+    lines:
+      - "interface vlan {{ item.vlan_id }}"
+  loop: "{{ networks_services }}"
+
+- name: Configure Anycast SVI(s) VRF Association
+  cisco.nxos.nxos_vrf_interface:
+    interface: "vlan{{ item.vlan_id }}"
+    vrf: "{{ item.vrf_name }}"
+    state: present
+  loop: "{{ vrfs_services + networks_services }}"
+
+- name: Enable Anycast GW SVI(s)
+  cisco.nxos.nxos_interfaces:
+    config:
+      - name: vlan{{ item.vlan_id }}
+        fabric_forwarding_anycast_gateway: 'true'
+        enabled: true
+    state: merged
+  loop: "{{ vrfs_services + networks_services }}"
+
+
+- name: Configure Vlan Ip
+  cisco.nxos.nxos_config:
+    lines:
+      - "interface vlan {{ item.vlan_id }}"
+      - "ip address {{ item.addr }} {{ item.mask }}"
+  loop: "{{ networks_services }}"
+
+- name: Configure VXLAN VTEP NVE Interface L3VNI Mapping(s)
+  cisco.nxos.nxos_vxlan_vtep_vni:
+    interface: nve1
+    vni: "{{ item.vni_id }}"
+    assoc_vrf: true
+    state: present
+  loop: "{{ vrfs }}"
+
+
+- name: Enable Anycast GW SVI(s)
+  cisco.nxos.nxos_interfaces:
+    config:
+      - name: "Ethernet {{ item.interface }}"
+        mode: layer2
+        enabled: true
+    state: merged
+  loop: "{{ layer2 }}"
+
+- name: Merge provided configuration with device configuration
+  cisco.nxos.nxos_l2_interfaces:
+    config:
+      - name: "Ethernet {{ item.interface }}"
+        access:
+          vlan: "{{ item.vlan_id }}"
+    state: merged
+  loop: "{{ layer2 }}"
+
+
+
+- name: Enable Anycast GW SVI(s)
+  cisco.nxos.nxos_interfaces:
+    config:
+      - name: vlan{{ item.vlan_id }}
+        ip_forward: "{{ 'true' if item.addr is not defined else omit }}"
+        enabled: true
+    state: merged
+  loop: "{{ vrfs }}"
+
+- name: Configure Anycast SVI(s) VRF Association
+  cisco.nxos.nxos_vrf_interface:
+    interface: "vlan{{ item.vlan_id }}"
+    vrf: "{{ item.vrf_name }}"
+    state: present
+  loop: "{{ vrfs }}"

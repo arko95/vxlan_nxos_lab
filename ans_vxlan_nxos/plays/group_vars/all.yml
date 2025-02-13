@@ -1,0 +1,7 @@
+---
+
+ansible_connection: ansible.netcommon.httpapi
+ansible_httpapi_port: 80
+ansible_network_os: cisco.nxos.nxos
+ansible_user: automation
+ansible_httpapi_pass: C1sc0123

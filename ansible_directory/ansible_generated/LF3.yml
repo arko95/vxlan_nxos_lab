@@ -1,0 +1,28 @@
+hostname: LF3
+
+layer2:
+  - interface: 1/3
+    mtu: 9216
+    vlan_id: 20
+  - interface: 1/4
+    mtu: 9216
+    vlan_id: 20
+
+vrfs_services:
+  - vrf_name: &refvrf_ansiblevrf MYVRF
+    vlan_name: *refvrf_ansiblevrf
+    vlan_id: 20
+    vni_id: 20
+
+networks_services:
+  - vrf_name: *refvrf_ansiblevrf
+    vlan_name: MYVRF
+    vlan_id: 20
+    vni_id: 20
+    addr: 10.2.2.1
+    mask: 255.255.255.0
+    mcast_grp: 225.20.20.20
+
+bgp_rid:
+  asn: 65000
+  router_id: 5.5.5.5

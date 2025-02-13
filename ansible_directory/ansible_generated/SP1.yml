@@ -1,0 +1,11 @@
+hostname: SP1
+
+layer2:
+
+vrfs_services:
+
+networks_services:
+
+bgp_rid:
+  asn: 65000
+  router_id: 1.1.1.1

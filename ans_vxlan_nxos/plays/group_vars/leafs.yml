@@ -1,0 +1,33 @@
+# leafs.j2
+
+features:
+  - ospf
+  - pim
+  - bgp
+  - nv overlay
+  - vn-segment-vlan-based
+  - interface-vlan
+  - netconf
+  - restconf
+
+bgp:
+  asn: 65000
+  neighbors:
+    - neighbor: 1.1.1.1
+      remote_as: 65000
+      update_source: loopback0
+    - neighbor: 2.2.2.2
+      remote_as: 65000
+      update_source: loopback0
+
+vrfs:
+  - vrf_name: &refvrf_ansiblevrf MYVRF
+    vlan_name: *refvrf_ansiblevrf
+    vlan_id: 5
+    vni_id: 5
+
+networks:
+  - vrf_name: *refvrf_ansiblevrf
+    vlan_name: MYVRF
+    vlan_id: 5
+    vni_id: 5

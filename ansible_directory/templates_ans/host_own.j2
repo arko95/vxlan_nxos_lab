@@ -1,0 +1,66 @@
+hostname: {{ device }}
+
+
+
+layer2:
+
+{%- for intf in interfaces %}
+    {%- if intf.name == device %}
+        {%-for if in intf['interface'] %}
+  - interface: {{ if.ifn }}
+    mtu: 9216
+    vlan_id: {{ if.vlan_id }}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+
+
+
+
+vrfs_services:
+{%- for serv in l3_service %}
+    {%- for dev in serv.devices %}
+        {%- if dev['name'] == device %}
+
+  - vrf_name: &{{ var_ref }} {{ dev.vrf }}
+    vlan_name: *{{ var_ref }}
+    vlan_id: {{ dev.vlan_id }}
+    vni_id: {{ dev.vni_id }}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+
+
+networks_services:
+{%- for l2_serv in l2_service %}
+    {%- for l2ser in l2_serv.devices %}
+        {%- if l2ser['name'] == device %}
+  - vrf_name: *{{ l2ser.var_ref }}
+    vlan_name: {{ l2ser.vrf}}
+    vlan_id: {{ l2ser.vlan_id }}
+    vni_id: {{ l2ser.vni_id }}
+    addr: {{ l2ser.ip_network }}
+    mask: {{ l2ser.ip_mask }}
+    mcast_grp: {{ l2ser.nve_mgroup }}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+
+{%-for dev_bgp in bgp['spines']['devices']['device'] %}
+    {%- if dev_bgp['name'] == device %}
+bgp_rid:
+  asn: {{ bgp['spines']['asn'] }}
+  router_id: {{ dev_bgp.id }}
+    {% endif %}
+{% endfor %}
+
+
+{%-for dev_bgp in bgp['leafs']['devices']['device'] %}
+    {%- if dev_bgp['name'] == device %}
+bgp_rid:
+  asn: {{ bgp['leafs']['asn'] }}
+  router_id: {{ dev_bgp.id }}
+    {% endif %}
+{% endfor %}

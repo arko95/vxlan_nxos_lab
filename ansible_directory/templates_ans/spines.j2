@@ -1,0 +1,18 @@
+# spines.j2
+
+features:
+  - ospf
+  - pim
+  - bgp
+  - nv overlay
+  - netconf
+  - restconf
+
+bgp:
+  asn: {{ asn }}
+  neighbors:
+    {% for neighbor in neighbors %}
+    - neighbor: {{ neighbor }}
+      remote_as: {{ asn }}
+      update_source: loopback0
+    {% endfor %}

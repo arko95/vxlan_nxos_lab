@@ -1,0 +1,49 @@
+testbed:
+  name: DevNet Expert - Small Branch Topology
+  alias: default_testbed
+  credentials:
+    default:
+      username: {{ NXOS_USERNAME }}
+      password: {{ NXOS_PASSWORD }}
+
+devices:
+  LF1:
+    os: nxos
+    alias: LF1
+    connections:
+      default:
+        protocol: ssh
+        ip: 172.16.100.57
+        port: 22
+  LF2:
+    os: nxos
+    alias: LF2
+    connections:
+      default:
+        protocol: ssh
+        ip: 172.16.100.58
+        port: 22
+  LF3:
+    os: nxos
+    alias: LF3
+    connections:
+      default:
+        protocol: ssh
+        ip: 172.16.100.59
+        port: 22
+  SP1:
+    os: nxos
+    alias: SP1
+    connections:
+      default:
+        protocol: ssh
+        ip: 172.16.100.55
+        port: 22
+  SP2:
+    os: nxos
+    alias: SP2
+    connections:
+      default:
+        protocol: ssh
+        ip: 172.16.100.56
+        port: 22

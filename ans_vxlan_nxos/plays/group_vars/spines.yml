@@ -1,0 +1,22 @@
+# spines.j2
+
+features:
+  - ospf
+  - pim
+  - bgp
+  - nv overlay
+  - netconf
+  - restconf
+
+bgp:
+  asn: 65000
+  neighbors:
+    - neighbor: 3.3.3.3
+      remote_as: 65000
+      update_source: loopback0
+    - neighbor: 4.4.4.4
+      remote_as: 65000
+      update_source: loopback0
+    - neighbor: 5.5.5.5
+      remote_as: 65000
+      update_source: loopback0

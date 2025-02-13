@@ -1,0 +1,67 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device tags="nocreate">
+      <name>{$HOSTNAME}</name>
+      <config tags="merge">
+
+         <vlan xmlns="http://tail-f.com/ned/cisco-nx">
+            <vlan-list>
+            <id>{$VLAN_ID_L3}</id>
+            <vn-segment>{$VNI_L3}</vn-segment>
+            </vlan-list>
+         </vlan>
+
+
+        <interface xmlns="http://tail-f.com/ned/cisco-nx">
+          <Vlan>
+              <name>{$VLAN_ID_L3}</name>
+              <vrf>
+                  <member>{$VRF_NAME_L3}</member>
+              </vrf>
+              <ip>
+                  <forward/>
+              </ip>
+          </Vlan>
+
+          <nve>
+                <name>{$NVE_ID_L3}</name>
+                <host-reachability>
+                    <protocol>bgp</protocol>
+                </host-reachability>
+                <member>
+                    <vni>
+                    <id>{$VNI_L3}</id>
+                    <associate-vrf/>
+                    </vni>
+                </member>
+                <source-interface>loopback0</source-interface>
+          </nve>
+        </interface>
+
+        <vrf xmlns="http://tail-f.com/ned/cisco-nx">
+          <context>
+          <id>{$VRF_NAME_L3}</id>
+          <vni>{$VNI_L3}</vni>
+          <rd>auto</rd>
+          <address-family>
+              <ipv4>
+              <unicast>
+                  <route-target>
+                  <method>both</method>
+                  <asn>auto</asn>
+                  <target-evpn>evpn</target-evpn>
+                  </route-target>
+                  <route-target>
+                  <method>both</method>
+                  <asn>auto</asn>
+                  <target-evpn>non-evpn</target-evpn>
+                  </route-target>
+              </unicast>
+              </ipv4>
+          </address-family>
+          </context>
+      </vrf>
+      </config>
+    </device>
+  </devices>
+</config-template>

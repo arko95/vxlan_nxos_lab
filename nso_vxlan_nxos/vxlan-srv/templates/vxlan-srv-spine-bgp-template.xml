@@ -1,0 +1,33 @@
+<config-template xmlns="http://tail-f.com/ns/config/1.0">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device tags="nocreate">
+      <name>{$HOSTNAME}</name>
+      <config tags="merge">
+        <router xmlns="http://tail-f.com/ned/cisco-nx">
+          <bgp>
+          <id>{$ASN}</id>
+          <address-family>
+              <proto>l2vpn</proto>
+              <type>evpn</type>
+          </address-family>
+          <neighbor>
+              <id>{$NEIGHBOR_SPINE}</id>
+              <inner-remote-as>
+              <remote-as>{$ASN}</remote-as>
+              </inner-remote-as>
+              <update-source>loopback0</update-source>
+              <address-family>
+              <proto>l2vpn</proto>
+              <type>evpn</type>
+              <route-reflector-client/>
+              <send-community>
+                  <attr>extended</attr>
+              </send-community>
+              </address-family>
+          </neighbor>
+          </bgp>
+      </router>
+      </config>
+    </device>
+  </devices>
+</config-template>

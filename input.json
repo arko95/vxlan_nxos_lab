@@ -1,0 +1,186 @@
+{
+    "name": "lab_vxlan_16",
+    "l2_service": [
+        {
+            "name": "vni10",
+            "devices": [
+                {
+                    "name": "LF1",
+                    "vlan_id": "10",
+                    "vni_id": "10",
+                    "nve_id": "1",
+                    "nve_mgroup": "225.10.10.10",
+                    "vrf": "MYVRF",
+                    "ip": "10.1.1.1/24",
+                    "gp_mcast_group": "225.0.0.0/8",
+                    "ip_anycast_address": "10.10.10.10",
+                    "gp_mcast_mac": "aaaa.aaaa.aaaa"
+                },
+                {
+                    "name": "LF2",
+                    "vlan_id": "10",
+                    "vni_id": "10",
+                    "nve_id": "1",
+                    "nve_mgroup": "225.10.10.10",
+                    "vrf": "MYVRF",
+                    "ip": "10.1.1.1/24",
+                    "gp_mcast_group": "225.0.0.0/8",
+                    "ip_anycast_address": "10.10.10.10",
+                    "gp_mcast_mac": "aaaa.aaaa.aaaa"
+                }
+            ]
+        },
+        {
+            "name": "vni20",
+            "devices": [
+                {
+                    "name": "LF2",
+                    "vlan_id": "20",
+                    "vni_id": "20",
+                    "nve_id": "1",
+                    "nve_mgroup": "225.20.20.20",
+                    "vrf": "MYVRF",
+                    "ip": "10.2.2.1/24",
+                    "gp_mcast_group": "225.0.0.0/8",
+                    "ip_anycast_address": "10.10.10.10",
+                    "gp_mcast_mac": "aaaa.aaaa.aaaa"
+                },
+                {
+                    "name": "LF3",
+                    "vlan_id": "20",
+                    "vni_id": "20",
+                    "nve_id": "1",
+                    "nve_mgroup": "225.20.20.20",
+                    "vrf": "MYVRF",
+                    "ip": "10.2.2.1/24",
+                    "gp_mcast_group": "225.0.0.0/8",
+                    "ip_anycast_address": "10.10.10.10",
+                    "gp_mcast_mac": "aaaa.aaaa.aaaa"
+                }
+            ]
+        }
+    ],
+    "l3_service": [
+        {
+            "name": "VNI5",
+            "devices": [
+                {
+                    "name": "LF1",
+                    "vlan_id": "5",
+                    "vni_id": "5",
+                    "nve_id": "1",
+                    "vrf": "MYVRF"
+                },
+                {
+                    "name": "LF2",
+                    "vlan_id": "5",
+                    "vni_id": "5",
+                    "nve_id": "1",
+                    "vrf": "MYVRF"
+                },
+                {
+                    "name": "LF3",
+                    "vlan_id": "5",
+                    "vni_id": "5",
+                    "nve_id": "1",
+                    "vrf": "MYVRF"
+                }
+            ]
+        }
+    ],
+    "bgp": {
+        "spines": {
+            "devices": {
+                "device": [
+                    {
+                        "name": "SP1",
+                        "dev": "SP1",
+                        "id": "1.1.1.1"
+                    },
+                    {
+                        "name": "SP2",
+                        "dev": "SP2",
+                        "id": "2.2.2.2"
+                    }
+                ]
+            },
+            "asn": "65000",
+            "neighbors": [
+                "3.3.3.3",
+                "4.4.4.4",
+                "5.5.5.5"
+            ]
+        },
+        "leafs": {
+            "devices": {
+                "device": [
+                    {
+                        "name": "LF1",
+                        "dev": "LF1",
+                        "id": "3.3.3.3"
+                    },
+                    {
+                        "name": "LF2",
+                        "dev": "LF2",
+                        "id": "4.4.4.4"
+                    },
+                    {
+                        "name": "LF3",
+                        "dev": "LF3",
+                        "id": "5.5.5.5"
+                    }
+                ]
+            },
+            "asn": "65000",
+            "neighbors": [
+                "1.1.1.1",
+                "2.2.2.2"
+            ]
+        }
+    },
+    "interfaces": [
+        {
+            "name": "LF1",
+            "interface": [
+                {
+                    "ifn": "1/3",
+                    "vlan_id": "10"
+                },
+                {
+                    "ifn": "1/4",
+                    "vlan_id": "10"
+                }
+            ]
+        },
+        {
+            "name": "LF2",
+            "interface": [
+                {
+                    "ifn": "1/1",
+                    "vlan_id": "10"
+                },
+                {
+                    "ifn": "1/2",
+                    "vlan_id": "10"
+                },
+                {
+                    "ifn": "1/5",
+                    "vlan_id": "20"
+                }
+            ]
+        },
+        {
+            "name": "LF3",
+            "interface": [
+                {
+                    "ifn": "1/3",
+                    "vlan_id": "20"
+                },
+                {
+                    "ifn": "1/4",
+                    "vlan_id": "20"
+                }
+            ]
+        }
+    ]
+}
