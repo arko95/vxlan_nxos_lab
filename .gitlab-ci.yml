@@ -1,0 +1,87 @@
+---
+stages:
+  - deploy
+  - test
+  - clean
+
+default:
+  image: debian:latest
+  before_script:
+    - apt-get update -y
+    - apt-get install -y curl jq
+    - | 
+       apt-get update && apt-get install -y python3 python3-pip && apt-get clean && rm -rf /var/lib/apt/lists/*
+    - echo "Deployment steps go here..."
+
+configure-devices-ansible:
+  stage: deploy
+  image: python:latest
+  script:
+    - pip install --upgrade pip
+    - pip install ansible 
+    - source as_script.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == "branch_ansible"
+
+configure-vxlan-terraform:
+  stage: deploy
+  script:
+    - pip install -r requirements.txt  # Install libraries from requirements.txt
+    - export TERRAFORM_VERSION=1.9.8
+    - apt-get update -y
+    - apt-get install unzip wget -y
+    - wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+    - unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+    - mv terraform /usr/local/bin/
+    - terraform --version  # Display version for debugging purposes only
+    - source tf_script.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == "br_terraform"
+
+configure-devices-nso:
+  stage: deploy
+  needs:
+  script:
+    - source nso_bash_script.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == "branch_nso"
+
+check-devices:
+  stage: test
+  image: devnetexperttraining/python
+  script:
+    - wait_time=10
+    - echo "Waiting for updating EVPNs tables on routers for $wait_time seconds..."
+    - sleep $wait_time
+    - echo "Executing the command now!"
+    - cd vxlan_pyats_testing
+    - python3 credentials.py
+    - export VNIS_IPS=VNIS_IPS.json
+    - pyats run job vxlan_job.py --testbed-file testbed.yml --no-archive --archive-dir . --archive-name vxlan_lab.tar
+
+
+clean-devices-ans:
+  stage: clean
+  image: devnetexperttraining/python
+  needs:
+    - check-devices
+  script:
+    - cd clean/clean_ans/
+    - python3 credentials.py
+    - pyats run job clean_vxlan_job.py --testbed-file testbed.yml
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "branch_ansible" && $CLEAN == "true"
+
+clean-devices-nso:
+  stage: clean
+  needs:
+    - check-devices
+  script:
+    - NAME=$(jq -r '.name' input.json)
+    - URL="http://localhost:8090/restconf/data/vxlan-srv:vxlan-srv=$NAME/un-deploy"
+    - | 
+       curl --location --request POST $URL  --header 'Accept: application/yang-data+json, application/vnd.yang.collection+json, application/yang-patch+json' --header 'Content-Type:application/yang-data+json' -u "admin:admin" --data ''
+
+  rules:
+    - if: $CI_COMMIT_BRANCH == "branch_nso" && $CLEAN == "true"
