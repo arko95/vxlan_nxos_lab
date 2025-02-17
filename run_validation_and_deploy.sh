@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Running Python validation..."
-./validate_json.py input_test6.json
+./validate_json.py input.json
 RESULT=$?
 
 if [ $RESULT -eq 0 ]; then
